@@ -71,7 +71,7 @@ public class BeerController {
 
     @RequestMapping(method = RequestMethod.GET, path = "{beerId}")
     public Beer getBeerById(@PathVariable final UUID beerId) {
-        log.info("Get beer by Id in Controller. Id: {} modyfide", beerId);
+        log.info("Get beer by Id in Controller. Id: {} modified", beerId);
         
         return this.beerService.getBeer(beerId);
     }

@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,38 +24,42 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/customers")
+@RequestMapping()
 public class CustomerController {
+    public static final String CUSTOMER_PATH = "/api/v1/customers";
+
+    public static final String CUSTOMER_PATH_ID = CUSTOMER_PATH + "/{customerId}";
+    
     private final CustomerService customerService;
     
-    @PatchMapping("{customerId}")
+    @PatchMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<Customer> patchCustomer(@PathVariable UUID customerId, @RequestBody Customer customer) {
         this.customerService.patchCustomerById(customerId, customer);
         
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @DeleteMapping("{customerId}")
+    @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<Customer> deleteCustomer(@PathVariable UUID customerId) {
         this.customerService.deleteCustomerById(customerId);
         
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @PutMapping("{customerId}")
+    @PutMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<Customer> updateCustomer(@PathVariable UUID customerId, @RequestBody Customer customer) {
         
         this.customerService.updateCustomer(customerId, customer);
         
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(CUSTOMER_PATH)
     public List<Customer> getCustomersList(){
         return this.customerService.getCustomersList();
     }
 
-    @PostMapping
+    @PostMapping(CUSTOMER_PATH)
     public ResponseEntity<Customer> saveNewCustomer(@RequestBody Customer customer) {
         final var savedCustomer = this.customerService.saveNewCustomer(customer);
         
@@ -64,7 +69,7 @@ public class CustomerController {
         return new ResponseEntity<>(savedCustomer, headers, HttpStatus.CREATED);
     }
     
-    @RequestMapping(path = "{customerId}",method = RequestMethod.GET)
+    @GetMapping(CUSTOMER_PATH_ID)
     public Customer getCustomerById(@PathVariable UUID customerId){
         return this.customerService.getCustomerById(customerId);
     }

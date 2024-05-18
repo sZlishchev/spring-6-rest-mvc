@@ -10,6 +10,7 @@ import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,12 +26,14 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/beer")
 public class BeerController {
+    
+    public static final String BEER_PATH = "/api/v1/beer";
+    public static final String BEER_PATH_ID = BEER_PATH + "/{beerId}";
     
     private final BeerService beerService;
     
-    @PatchMapping("{beerId}")
+    @PatchMapping(BEER_PATH_ID)
     public ResponseEntity<Beer> patchBeer(@PathVariable UUID beerId, @RequestBody Beer beer) {
         this.beerService.patchBeerById(beerId, beer);
         
@@ -38,14 +41,14 @@ public class BeerController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @DeleteMapping("{beerId}")
+    @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity<Beer> deleteBeer(@PathVariable UUID beerId) {
         this.beerService.deleteBeerById(beerId);
         
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @PutMapping("{beerId}")
+    @PutMapping(BEER_PATH_ID)
     public ResponseEntity<Beer> updateBeer(@PathVariable UUID beerId, @RequestBody Beer beer) {
         
         this.beerService.updateBeer(beerId, beer);
@@ -53,7 +56,7 @@ public class BeerController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
-    @PostMapping
+    @PostMapping(BEER_PATH)
     public ResponseEntity<Beer> saveNewBeer(@RequestBody Beer beer) {
         final var savedBeer = this.beerService.saveNewBeer(beer);
         
@@ -64,14 +67,14 @@ public class BeerController {
         return new ResponseEntity<>(savedBeer, headers ,HttpStatus.CREATED);
     }
     
-    @RequestMapping(method = RequestMethod.GET)
+    @GetMapping(BEER_PATH)
     public List<Beer> getBeerList() {
         return beerService.getBeerList();
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "{beerId}")
+    @GetMapping(BEER_PATH_ID)
     public Beer getBeerById(@PathVariable final UUID beerId) {
-        log.info("Get beer by Id in Controller. Id: {} modyfide", beerId);
+        log.info("Get beer by Id in Controller. Id: {} modified", beerId);
         
         return this.beerService.getBeer(beerId);
     }

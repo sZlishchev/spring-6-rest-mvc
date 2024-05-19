@@ -2,7 +2,7 @@ package guru.springframework.spring6restmvc.controllers;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import guru.springframework.spring6restmvc.model.Customer;
+import guru.springframework.spring6restmvc.model.CustomerDTO;
 import guru.springframework.spring6restmvc.services.CustomerService;
 import guru.springframework.spring6restmvc.services.impl.CustomerServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ class CustomerControllerTest {
     @Captor
     private ArgumentCaptor<UUID> uuidCaptor;
     @Captor
-    private ArgumentCaptor<Customer> customerCaptor;
+    private ArgumentCaptor<CustomerDTO> customerCaptor;
     
     private final CustomerServiceImpl customerServiceImpl = new CustomerServiceImpl();
 

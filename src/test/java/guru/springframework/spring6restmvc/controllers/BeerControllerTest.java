@@ -1,8 +1,7 @@
 package guru.springframework.spring6restmvc.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import guru.springframework.spring6restmvc.exception.NotFoundException;
-import guru.springframework.spring6restmvc.model.Beer;
+import guru.springframework.spring6restmvc.model.BeerDTO;
 import guru.springframework.spring6restmvc.services.BeerService;
 import guru.springframework.spring6restmvc.services.impl.BeerServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,7 @@ class BeerControllerTest {
     @Captor
     private ArgumentCaptor<UUID> uuidCaptor;
     
-    @Captor ArgumentCaptor<Beer> beerCaptor;
+    @Captor ArgumentCaptor<BeerDTO> beerCaptor;
     
     private final BeerServiceImpl beerServiceImpl = new BeerServiceImpl();
     

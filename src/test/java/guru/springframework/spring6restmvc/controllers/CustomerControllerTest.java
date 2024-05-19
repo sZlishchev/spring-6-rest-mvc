@@ -15,11 +15,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -44,6 +46,14 @@ class CustomerControllerTest {
     
     private final CustomerServiceImpl customerServiceImpl = new CustomerServiceImpl();
 
+    @Test
+    void testGetCustomerByIdNotFound() throws Exception {
+        when(this.customerService.getCustomerById(any(UUID.class))).thenReturn(Optional.empty());
+        
+        this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+    
     @Test
     void testPatchCustomer() throws Exception {
         final var customerId = UUID.randomUUID();
@@ -119,7 +129,7 @@ class CustomerControllerTest {
     void getCustomerById() throws Exception {
         final var testCustomer = this.customerServiceImpl.getCustomersList().get(0);
         
-        when(this.customerService.getCustomerById(testCustomer.getId())).thenReturn(testCustomer);
+        when(this.customerService.getCustomerById(testCustomer.getId())).thenReturn(Optional.of(testCustomer));
         
         this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, testCustomer.getId())
                 .accept(MediaType.APPLICATION_JSON))

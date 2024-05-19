@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -55,8 +56,8 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer getCustomerById(UUID customerId) {
-        return this.customerMap.get(customerId);
+    public Optional<Customer> getCustomerById(UUID customerId) {
+        return Optional.of(this.customerMap.get(customerId));
     }
 
     @Override

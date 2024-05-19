@@ -1,6 +1,7 @@
 package guru.springframework.spring6restmvc.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import guru.springframework.spring6restmvc.exception.NotFoundException;
 import guru.springframework.spring6restmvc.model.Beer;
 import guru.springframework.spring6restmvc.services.BeerService;
 import guru.springframework.spring6restmvc.services.impl.BeerServiceImpl;
@@ -16,13 +17,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -44,6 +45,15 @@ class BeerControllerTest {
     @Captor ArgumentCaptor<Beer> beerCaptor;
     
     private final BeerServiceImpl beerServiceImpl = new BeerServiceImpl();
+    
+    @Test
+    void testGetBeerByIdNotFound() throws Exception {
+        
+        when(this.beerService.getBeerById(any(UUID.class))).thenReturn(Optional.empty());
+        
+        this.mockMvc.perform(get(BeerController.BEER_PATH_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
     
     @Test
     void testPatchBeer() throws Exception {
@@ -120,7 +130,7 @@ class BeerControllerTest {
     void getBeerById() throws Exception {
         final var testBeer = this.beerServiceImpl.getBeerList().get(0);
         
-        when(this.beerService.getBeer(testBeer.getId())).thenReturn(testBeer);
+        when(this.beerService.getBeerById(testBeer.getId())).thenReturn(Optional.of(testBeer));
 
         this.mockMvc.perform(get(BeerController.BEER_PATH_ID, testBeer.getId())
                         .accept(MediaType.APPLICATION_JSON))
@@ -129,7 +139,7 @@ class BeerControllerTest {
                 .andExpect(jsonPath("$.id", is(testBeer.getId().toString())))
                 .andExpect(jsonPath("$.beerName", is(testBeer.getBeerName())));
         
-        Mockito.verify(this.beerService).getBeer(any(UUID.class));
+        Mockito.verify(this.beerService).getBeerById(any(UUID.class));
                
     }
 }

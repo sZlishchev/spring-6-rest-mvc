@@ -3,12 +3,13 @@ package guru.springframework.spring6restmvc.services;
 import guru.springframework.spring6restmvc.model.Beer;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface BeerService {
     List<Beer> getBeerList();
 
-    Beer getBeer(final UUID id);
+    Optional<Beer> getBeerById(final UUID id);
 
     Beer saveNewBeer(final Beer beer);
 

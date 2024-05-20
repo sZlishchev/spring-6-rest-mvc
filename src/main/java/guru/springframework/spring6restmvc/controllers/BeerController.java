@@ -48,7 +48,7 @@ public class BeerController {
     @PutMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> updateBeer(@PathVariable UUID beerId, @RequestBody BeerDTO beer) {
         
-        this.beerService.updateBeer(beerId, beer);
+        this.beerService.updateBeer(beerId, beer).orElseThrow(NotFoundException::new);
         
         return new ResponseEntity<>(HttpStatus.OK);
     }

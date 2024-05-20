@@ -96,7 +96,7 @@ public class BeerServiceImpl implements BeerService {
     }
 
     @Override
-    public void updateBeer(UUID beerId, BeerDTO beer) {
+    public Optional<BeerDTO> updateBeer(UUID beerId, BeerDTO beer) {
         final var beerToUpdate = this.beerMap.get(beerId);
         
         beerToUpdate.setBeerName(beer.getBeerName());
@@ -105,6 +105,7 @@ public class BeerServiceImpl implements BeerService {
         beerToUpdate.setPrice(beer.getPrice());
         beerToUpdate.setQuantityOnHand(beer.getQuantityOnHand());
         beerToUpdate.setUpdatedDate(LocalDateTime.now());
+        return Optional.of(beerToUpdate);
     }
 
     @Override

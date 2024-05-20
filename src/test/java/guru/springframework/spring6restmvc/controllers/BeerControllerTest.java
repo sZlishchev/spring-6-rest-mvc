@@ -88,6 +88,9 @@ class BeerControllerTest {
     void testBeerUpdate() throws Exception {
         final var beer = this.beerServiceImpl.getBeerList().get(0);
         
+        when(this.beerService.updateBeer(beer.getId(), beer))
+            .thenReturn(Optional.ofNullable(BeerDTO.builder().build()));
+        
         this.mockMvc.perform(put(BeerController.BEER_PATH_ID, beer.getId())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)

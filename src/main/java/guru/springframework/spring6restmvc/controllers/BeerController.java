@@ -32,15 +32,17 @@ public class BeerController {
     
     @PatchMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> patchBeer(@PathVariable UUID beerId, @RequestBody BeerDTO beer) {
-        this.beerService.patchBeerById(beerId, beer);
-        
-        
+        this.beerService.patchBeerById(beerId, beer)
+                .orElseThrow(NotFoundException::new);
+       
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
     @DeleteMapping(BEER_PATH_ID)
     public ResponseEntity<BeerDTO> deleteBeer(@PathVariable UUID beerId) {
-        this.beerService.deleteBeerById(beerId);
+        if (!this.beerService.deleteBeerById(beerId)) {
+            throw new NotFoundException();
+        }
         
         return new ResponseEntity<>(HttpStatus.OK);
     }

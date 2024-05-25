@@ -13,6 +13,7 @@ import guru.springframework.spring6restmvc.services.BeerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 @Primary
@@ -59,12 +60,49 @@ public class BeerServiceJPA implements BeerService {
   }
 
   @Override
-  public void deleteBeerById(UUID beerId) {
-
+  public Boolean deleteBeerById(UUID beerId) {
+      if(this.beerRepository.existsById(beerId)) {
+        this.beerRepository.deleteById(beerId);
+        
+        return true;
+      }
+      
+      return false;
   }
 
   @Override
-  public void patchBeerById(UUID beerId, BeerDTO beer) {
+  public Optional<BeerDTO> patchBeerById(UUID beerId, BeerDTO beer) {
+    final var atomicReference = new AtomicReference<Optional<BeerDTO>>();
+    
+    
+    this.beerRepository.findById(beerId)
+            .ifPresentOrElse(beerToUpdate -> {
+              
+      if(StringUtils.hasText(beer.getBeerName())) {
+        beerToUpdate.setBeerName(beer.getBeerName());
+      }
 
+      if(beer.getBeerStyle() != null) {
+        beerToUpdate.setBeerStyle(beer.getBeerStyle());
+      }
+
+      if(beer.getQuantityOnHand() != null) {
+        beerToUpdate.setQuantityOnHand(beer.getQuantityOnHand());
+      }
+
+      if(beer.getPrice() != null) {
+        beerToUpdate.setPrice(beer.getPrice());
+      }
+
+      if(StringUtils.hasText(beer.getUpc())) {
+        beerToUpdate.setUpc(beer.getUpc());
+      }
+
+      beerToUpdate.setUpdatedDate(LocalDateTime.now());
+
+    atomicReference.set(Optional.of(this.beerMapper.beerToBeerDTO(this.beerRepository.save(beerToUpdate))));
+    }, () -> atomicReference.set(Optional.empty()));
+  
+    return atomicReference.get();
   }
 }

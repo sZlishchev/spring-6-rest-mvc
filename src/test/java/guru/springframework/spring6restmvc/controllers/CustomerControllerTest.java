@@ -58,24 +58,27 @@ class CustomerControllerTest {
     void testPatchCustomer() throws Exception {
         final var customerId = UUID.randomUUID();
         
-        final var customerPropertiesMap = new HashMap<>();
-        customerPropertiesMap.put("name", "John");
+        final var customer = CustomerDTO.builder().name("John").build();
+       
+        when(this.customerService.patchCustomerById(customerId, customer)).thenReturn(Optional.of(customer));
         
         this.mockMvc.perform(patch(CustomerController.CUSTOMER_PATH_ID, customerId)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(customerPropertiesMap)))
+                .content(this.objectMapper.writeValueAsString(customer)))
                 .andExpect(status().isOk());
         
         verify(this.customerService).patchCustomerById(uuidCaptor.capture(), this.customerCaptor.capture());
         
-        assertThat(customerPropertiesMap.get("name")).isEqualTo(customerCaptor.getValue().getName());
+        assertThat(customer.getName()).isEqualTo(customerCaptor.getValue().getName());
         assertThat(customerId).isEqualTo(uuidCaptor.getValue());
     }
     
     @Test
     void testDeleteCustomer() throws Exception {
         final var customerId = UUID.randomUUID();
+        
+        when(this.customerService.deleteCustomerById(customerId)).thenReturn(true);
         
         this.mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, customerId)
                 .accept(MediaType.APPLICATION_JSON))
@@ -88,6 +91,8 @@ class CustomerControllerTest {
     void testCustomerUpdate() throws Exception {
         final var customer = this.customerServiceImpl.getCustomersList().get(0);
 
+        when(this.customerService.updateCustomer(customer.getId(), customer)).thenReturn(Optional.of(customer));
+        
         this.mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, customer.getId())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)

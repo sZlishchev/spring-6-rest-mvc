@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,7 +41,7 @@ class BeerControllerIT {
   }
 
   @Test
-  void testGerBeerByIdNotFound() {
+  void testGetBeerByIdNotFound() {
     assertThrows(NotFoundException.class, ()-> this.beerController.getBeerById(UUID.randomUUID()));
   }
 
@@ -84,6 +85,8 @@ class BeerControllerIT {
     assertThat(resultBeer).isNotNull();
   }
 
+  @Rollback
+  @Transactional
   @Test
   void testUpdateBeer() {
     final var beerToUpdate = this.beerMapper.beerToBeerDTO(this.beerRepository.findAll().get(0));
@@ -110,5 +113,53 @@ class BeerControllerIT {
   @Test
   void testUpdateBeerNotFound() {
     assertThrows(NotFoundException.class, () -> this.beerController.updateBeer(UUID.randomUUID(), BeerDTO.builder().build()));
+  }
+  
+  @Rollback
+  @Transactional
+  @Test
+  void testDeleteBeerById() {
+    final var beer = this.beerRepository.findAll().get(0);
+
+    final var response = this.beerController.deleteBeer(beer.getId());
+    
+    assertThat(response).isNotNull();
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(this.beerRepository.findById(beer.getId())).isEmpty();
+  }
+  
+  @Test
+  public void testDeleteBeerByIdNotFound() {
+    assertThrows(NotFoundException.class, () -> this.beerController.deleteBeer(UUID.randomUUID()));
+  }
+
+  @Rollback
+  @Transactional
+  @Test
+  void testPatchBeer() {
+    final var beerToUpdate = this.beerRepository.findAll().get(0);
+    
+    final var beerForUpdate = BeerDTO.builder().beerName("Updated Name").quantityOnHand(99).build();
+
+    ResponseEntity<BeerDTO> response = this.beerController.patchBeer(beerToUpdate.getId(), beerForUpdate);
+    
+    assertThat(response).isNotNull();
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    
+    final var updatedBeer = this.beerRepository.findById(beerToUpdate.getId()).get();
+    
+    assertThat(updatedBeer.getBeerName()).isEqualTo(beerForUpdate.getBeerName());
+    assertThat(updatedBeer.getQuantityOnHand()).isEqualTo(beerForUpdate.getQuantityOnHand());
+    
+    assertThat(updatedBeer.getId()).isEqualTo(beerToUpdate.getId());
+    assertThat(updatedBeer.getBeerStyle()).isEqualTo(beerToUpdate.getBeerStyle());
+    assertThat(updatedBeer.getUpc()).isEqualTo(beerToUpdate.getUpc());
+    assertThat(updatedBeer.getPrice()).isEqualTo(beerToUpdate.getPrice());
+    assertThat(updatedBeer.getVersion()).isEqualTo(beerToUpdate.getVersion());
+  }
+
+  @Test
+  void testPatchBeerNotFound() {
+    assertThrows(NotFoundException.class, () -> this.beerController.patchBeer(UUID.randomUUID(), BeerDTO.builder().build()));
   }
 }

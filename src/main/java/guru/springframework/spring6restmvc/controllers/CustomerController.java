@@ -34,14 +34,16 @@ public class CustomerController {
     
     @PatchMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<CustomerDTO> patchCustomer(@PathVariable UUID customerId, @RequestBody CustomerDTO customer) {
-        this.customerService.patchCustomerById(customerId, customer);
+        this.customerService.patchCustomerById(customerId, customer).orElseThrow(NotFoundException::new);
         
         return new ResponseEntity<>(HttpStatus.OK);
     }
     
     @DeleteMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<CustomerDTO> deleteCustomer(@PathVariable UUID customerId) {
-        this.customerService.deleteCustomerById(customerId);
+        if (!this.customerService.deleteCustomerById(customerId)) {
+            throw new NotFoundException();
+        }
         
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -49,7 +51,7 @@ public class CustomerController {
     @PutMapping(CUSTOMER_PATH_ID)
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable UUID customerId, @RequestBody CustomerDTO customer) {
         
-        this.customerService.updateCustomer(customerId, customer);
+        this.customerService.updateCustomer(customerId, customer).orElseThrow(NotFoundException::new);
         
         return new ResponseEntity<>(HttpStatus.OK);
     }

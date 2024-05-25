@@ -57,25 +57,27 @@ class BeerControllerTest {
     @Test
     void testPatchBeer() throws Exception {
         final var beerId = UUID.randomUUID();
+        final var beer = BeerDTO.builder().beerName("Obolon").build();
         
-        final var beerPropertiesMap = new HashMap<>();
-        beerPropertiesMap.put("beerName", "Obolon");
+        when(this.beerService.patchBeerById(beerId, beer)).thenReturn(Optional.of(beer));
         
         this.mockMvc.perform(patch(BeerController.BEER_PATH_ID, beerId)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(beerPropertiesMap)))
+                .content(this.objectMapper.writeValueAsString(beer)))
                 .andExpect(status().isOk());
         
         verify(this.beerService).patchBeerById(uuidCaptor.capture(), beerCaptor.capture());
         
-        assertThat(beerPropertiesMap.get("beerName")).isEqualTo(beerCaptor.getValue().getBeerName());
+        assertThat(beer.getBeerName()).isEqualTo(beerCaptor.getValue().getBeerName());
         assertThat(beerId).isEqualTo(uuidCaptor.getValue());
     }
     
     @Test
     void testDeleteBeer() throws Exception {
         final var beerId = UUID.randomUUID();
+        
+        when(this.beerService.deleteBeerById(beerId)).thenReturn(true);
         
         this.mockMvc.perform(delete(BeerController.BEER_PATH_ID, beerId)
                         .accept(MediaType.APPLICATION_JSON))

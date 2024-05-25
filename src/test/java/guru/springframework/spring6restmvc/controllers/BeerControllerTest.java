@@ -1,8 +1,7 @@
 package guru.springframework.spring6restmvc.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import guru.springframework.spring6restmvc.exception.NotFoundException;
-import guru.springframework.spring6restmvc.model.Beer;
+import guru.springframework.spring6restmvc.model.BeerDTO;
 import guru.springframework.spring6restmvc.services.BeerService;
 import guru.springframework.spring6restmvc.services.impl.BeerServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -42,7 +41,7 @@ class BeerControllerTest {
     @Captor
     private ArgumentCaptor<UUID> uuidCaptor;
     
-    @Captor ArgumentCaptor<Beer> beerCaptor;
+    @Captor ArgumentCaptor<BeerDTO> beerCaptor;
     
     private final BeerServiceImpl beerServiceImpl = new BeerServiceImpl();
     
@@ -58,25 +57,27 @@ class BeerControllerTest {
     @Test
     void testPatchBeer() throws Exception {
         final var beerId = UUID.randomUUID();
+        final var beer = BeerDTO.builder().beerName("Obolon").build();
         
-        final var beerPropertiesMap = new HashMap<>();
-        beerPropertiesMap.put("beerName", "Obolon");
+        when(this.beerService.patchBeerById(beerId, beer)).thenReturn(Optional.of(beer));
         
         this.mockMvc.perform(patch(BeerController.BEER_PATH_ID, beerId)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(beerPropertiesMap)))
+                .content(this.objectMapper.writeValueAsString(beer)))
                 .andExpect(status().isOk());
         
         verify(this.beerService).patchBeerById(uuidCaptor.capture(), beerCaptor.capture());
         
-        assertThat(beerPropertiesMap.get("beerName")).isEqualTo(beerCaptor.getValue().getBeerName());
+        assertThat(beer.getBeerName()).isEqualTo(beerCaptor.getValue().getBeerName());
         assertThat(beerId).isEqualTo(uuidCaptor.getValue());
     }
     
     @Test
     void testDeleteBeer() throws Exception {
         final var beerId = UUID.randomUUID();
+        
+        when(this.beerService.deleteBeerById(beerId)).thenReturn(true);
         
         this.mockMvc.perform(delete(BeerController.BEER_PATH_ID, beerId)
                         .accept(MediaType.APPLICATION_JSON))
@@ -88,6 +89,9 @@ class BeerControllerTest {
     @Test
     void testBeerUpdate() throws Exception {
         final var beer = this.beerServiceImpl.getBeerList().get(0);
+        
+        when(this.beerService.updateBeer(beer.getId(), beer))
+            .thenReturn(Optional.ofNullable(BeerDTO.builder().build()));
         
         this.mockMvc.perform(put(BeerController.BEER_PATH_ID, beer.getId())
                 .accept(MediaType.APPLICATION_JSON)

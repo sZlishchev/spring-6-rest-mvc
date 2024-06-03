@@ -77,7 +77,7 @@ class BeerControllerIT {
         final var beerList = this.beerController.getBeerList();
 
         assertThat(beerList).isNotNull();
-        assertThat(beerList.size()).isEqualTo(3);
+        assertThat(beerList.size()).isEqualTo(2413);
     }
 
     @Rollback

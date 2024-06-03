@@ -6,8 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
-import guru.springframework.spring6restmvc.mappers.BeerMapper;
 import guru.springframework.spring6restmvc.model.BeerDTO;
+import guru.springframework.spring6restmvc.mappers.BeerMapper;
 import guru.springframework.spring6restmvc.repositories.BeerRepository;
 import guru.springframework.spring6restmvc.services.BeerService;
 import lombok.RequiredArgsConstructor;

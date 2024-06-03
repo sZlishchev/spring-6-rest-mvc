@@ -16,8 +16,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
@@ -60,6 +62,10 @@ public class Beer {
 
     @NotNull
     private BigDecimal price;
+    
+    @CreationTimestamp
     private LocalDateTime createdDate;
+    
+    @UpdateTimestamp
     private LocalDateTime updatedDate;
 }

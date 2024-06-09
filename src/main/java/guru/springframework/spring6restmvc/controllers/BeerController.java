@@ -2,6 +2,7 @@ package guru.springframework.spring6restmvc.controllers;
 
 import guru.springframework.spring6restmvc.exception.NotFoundException;
 import guru.springframework.spring6restmvc.model.BeerDTO;
+import guru.springframework.spring6restmvc.model.BeerStyle;
 import guru.springframework.spring6restmvc.services.BeerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -68,8 +70,10 @@ public class BeerController {
     }
     
     @GetMapping(BEER_PATH)
-    public List<BeerDTO> getBeerList() {
-        return beerService.getBeerList();
+    public List<BeerDTO> getBeerList(@RequestParam(required = false) String beerName, 
+                                     @RequestParam(required = false) BeerStyle beerStyle,
+                                     @RequestParam(required = false) Boolean showInventory) {
+        return beerService.getBeerList(beerName, beerStyle, showInventory);
     }
     
     @GetMapping(BEER_PATH_ID)

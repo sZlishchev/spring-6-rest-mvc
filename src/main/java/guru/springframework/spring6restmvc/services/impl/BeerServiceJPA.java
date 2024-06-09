@@ -1,12 +1,10 @@
 package guru.springframework.spring6restmvc.services.impl;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import guru.springframework.spring6restmvc.enteties.Beer;
 import guru.springframework.spring6restmvc.model.BeerDTO;
@@ -16,6 +14,10 @@ import guru.springframework.spring6restmvc.repositories.BeerRepository;
 import guru.springframework.spring6restmvc.services.BeerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -24,36 +26,34 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class BeerServiceJPA implements BeerService {
   
+  private static final int DEFAULT_PAGE = 0;
+
+  private static final int DEFAULT_PAGE_SIZE = 25;
+  
   private final BeerRepository beerRepository;
   private final BeerMapper beerMapper;
 
   @Override
-  public List<BeerDTO> getBeerList(String beerName, BeerStyle beerStyle, Boolean showInventory) {
-    final List<Beer> beerList;
-    
+  public Page<BeerDTO> getBeerPage(String beerName, BeerStyle beerStyle, Boolean showInventory, Integer pageNumber, Integer pageSize) {
+    final Page<Beer> beerPage;
+
+    final var pageRequest = this.buildPageRequest(pageNumber, pageSize);
+
     if (StringUtils.hasText(beerName) && beerStyle == null) {
-      beerList = this.getBeerListByName(beerName);
+      beerPage = this.getBeerListByName(beerName, pageRequest);
     } else if (!StringUtils.hasText(beerName) && beerStyle != null) {
-      beerList = this.getBeerListByStyle(beerStyle);
+      beerPage = this.getBeerListByStyle(beerStyle, pageRequest);
     } else if (StringUtils.hasText(beerName) && beerStyle != null) {
-      beerList = this.getBeerListByNameAndStyle(beerName, beerStyle);
+      beerPage = this.getBeerListByNameAndStyle(beerName, beerStyle, pageRequest);
     } else {
-      beerList = this.beerRepository.findAll();
+      beerPage = this.beerRepository.findAll(pageRequest);
     }
     
     if (Objects.nonNull(showInventory) && !showInventory) {
-      beerList.forEach(beer -> beer.setQuantityOnHand(null));
+      beerPage.forEach(beer -> beer.setQuantityOnHand(null));
     }
     
-    return this.beerMapper.beerListToBeerListDto(beerList);
-  }
-
-  private List<Beer> getBeerListByNameAndStyle(String beerName, BeerStyle beerStyle) {
-    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%" + beerName + "%", beerStyle);
-  }
-
-  private List<Beer> getBeerListByStyle(BeerStyle beerStyle) {
-    return this.beerRepository.findAllByBeerStyle(beerStyle);
+    return beerPage.map(this.beerMapper::beerToBeerDTO);
   }
 
   @Override
@@ -134,7 +134,40 @@ public class BeerServiceJPA implements BeerService {
     return atomicReference.get();
   }
 
-  private List<Beer> getBeerListByName(String beerName) {
-    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCase("%" + beerName + "%");
+  private Page<Beer> getBeerListByNameAndStyle(final String beerName, final BeerStyle beerStyle, final Pageable pageable) {
+    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%" + beerName + "%", beerStyle, pageable);
+  }
+
+  private Page<Beer> getBeerListByStyle(final BeerStyle beerStyle, final Pageable pageable) {
+    return this.beerRepository.findAllByBeerStyle(beerStyle, pageable);
+  }
+
+  private Page<Beer> getBeerListByName(final String beerName, final Pageable pageable) {
+    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCase("%" + beerName + "%", pageable);
+  }
+  
+  private PageRequest buildPageRequest(final Integer pageNumber, final Integer pageSize) {
+    final int queryPageNumber;
+    final int queryPageSize;
+    
+    if (Objects.nonNull(pageNumber) && pageNumber > DEFAULT_PAGE) {
+      queryPageNumber = pageNumber;
+    } else {
+      queryPageNumber = DEFAULT_PAGE;
+    }
+    
+    if (Objects.nonNull(pageSize) && pageSize > DEFAULT_PAGE_SIZE) {
+      if (pageSize > 1000) {
+        queryPageSize = 1000;
+      } else {
+        queryPageSize = pageSize;
+      }
+    } else {
+      queryPageSize = DEFAULT_PAGE_SIZE;
+    }
+    
+    final var sort = Sort.by(Sort.Order.asc("beerName"));
+    
+    return PageRequest.of(queryPageNumber, queryPageSize, sort);
   }
 }

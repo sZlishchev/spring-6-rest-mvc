@@ -57,7 +57,7 @@ class BeerRepositoryTest {
 
     @Test
     void testGetAllBeersByName() {
-        final var list = this.beerRepository.findAllByBeerNameIsLikeIgnoreCase("%IPA%");
+        final var list = this.beerRepository.findAllByBeerNameIsLikeIgnoreCase("%IPA%", null);
 
         assertNotNull(list);
         assertThat(list).hasSize(336);
@@ -65,7 +65,7 @@ class BeerRepositoryTest {
 
     @Test
     void testGetAllBeersByStyle() {
-        final var list = this.beerRepository.findAllByBeerStyle(BeerStyle.STOUT);
+        final var list = this.beerRepository.findAllByBeerStyle(BeerStyle.STOUT, null);
         
         assertNotNull(list);
         assertThat(list).hasSize(57);
@@ -73,7 +73,7 @@ class BeerRepositoryTest {
 
     @Test
     void testGetAllBeersByNameAndStyle() {
-        final var list = this.beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%IPA%", BeerStyle.IPA);
+        final var list = this.beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%IPA%", BeerStyle.IPA, null);
 
         assertNotNull(list);
         assertThat(list).hasSize(310);

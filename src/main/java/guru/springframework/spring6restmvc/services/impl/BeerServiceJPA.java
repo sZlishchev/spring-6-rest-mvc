@@ -2,12 +2,16 @@ package guru.springframework.spring6restmvc.services.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
+import guru.springframework.spring6restmvc.enteties.Beer;
 import guru.springframework.spring6restmvc.model.BeerDTO;
 import guru.springframework.spring6restmvc.mappers.BeerMapper;
+import guru.springframework.spring6restmvc.model.BeerStyle;
 import guru.springframework.spring6restmvc.repositories.BeerRepository;
 import guru.springframework.spring6restmvc.services.BeerService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +28,32 @@ public class BeerServiceJPA implements BeerService {
   private final BeerMapper beerMapper;
 
   @Override
-  public List<BeerDTO> getBeerList() {
-    return this.beerMapper.beerListToBeerListDto(this.beerRepository.findAll());
+  public List<BeerDTO> getBeerList(String beerName, BeerStyle beerStyle, Boolean showInventory) {
+    final List<Beer> beerList;
+    
+    if (StringUtils.hasText(beerName) && beerStyle == null) {
+      beerList = this.getBeerListByName(beerName);
+    } else if (!StringUtils.hasText(beerName) && beerStyle != null) {
+      beerList = this.getBeerListByStyle(beerStyle);
+    } else if (StringUtils.hasText(beerName) && beerStyle != null) {
+      beerList = this.getBeerListByNameAndStyle(beerName, beerStyle);
+    } else {
+      beerList = this.beerRepository.findAll();
+    }
+    
+    if (Objects.nonNull(showInventory) && !showInventory) {
+      beerList.forEach(beer -> beer.setQuantityOnHand(null));
+    }
+    
+    return this.beerMapper.beerListToBeerListDto(beerList);
+  }
+
+  private List<Beer> getBeerListByNameAndStyle(String beerName, BeerStyle beerStyle) {
+    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCaseAndBeerStyle("%" + beerName + "%", beerStyle);
+  }
+
+  private List<Beer> getBeerListByStyle(BeerStyle beerStyle) {
+    return this.beerRepository.findAllByBeerStyle(beerStyle);
   }
 
   @Override
@@ -104,5 +132,9 @@ public class BeerServiceJPA implements BeerService {
     }, () -> atomicReference.set(Optional.empty()));
   
     return atomicReference.get();
+  }
+
+  private List<Beer> getBeerListByName(String beerName) {
+    return this.beerRepository.findAllByBeerNameIsLikeIgnoreCase("%" + beerName + "%");
   }
 }

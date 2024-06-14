@@ -2,6 +2,7 @@ package guru.springframework.spring6restmvc.repositories;
 
 import guru.springframework.spring6restmvc.enteties.Beer;
 import guru.springframework.spring6restmvc.enteties.BeerOrder;
+import guru.springframework.spring6restmvc.enteties.BeerOrderShipment;
 import guru.springframework.spring6restmvc.enteties.Customer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,9 @@ class BeerOrderRepositoryTest {
         final var beerOrder = BeerOrder.builder()
                 .customerRef("Test Order")
                 .customer(testCustomer)
+                .beerOrderShipment(BeerOrderShipment.builder()
+                        .trackingNumber("35235t")
+                        .build())
                 .build();
 
         final var savedBeerOrder = this.beerOrderRepository.save(beerOrder);

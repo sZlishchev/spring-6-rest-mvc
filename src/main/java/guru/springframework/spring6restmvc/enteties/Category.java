@@ -4,7 +4,11 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinColumns;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,28 +32,32 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-public class Customer {
-    
+public class Category {
+
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @JdbcTypeCode(SqlTypes.CHAR)
     @Column(length = 36, columnDefinition = "varchar(36)", nullable = false, updatable = false)
     private UUID id;
-    
+
     @Version
     private Integer version;
-    private String email;
-    private String name;
     
-    @CreationTimestamp
-    @Column(updatable = false)
-    private LocalDateTime createdDateTime;
-    
-    @UpdateTimestamp
-    private LocalDateTime lastUpdateDateTime;
+    private String description;
     
     @Builder.Default
-    @OneToMany(mappedBy = "customer")
-    private Set<BeerOrder> beerOrders = new HashSet<>();
+    @ManyToMany
+    @JoinTable(
+            name = "beer_category",
+            joinColumns = {@JoinColumn(name = "category_id")},
+            inverseJoinColumns = {@JoinColumn(name = "beer_id")})
+    private Set<Beer> beers = new HashSet<>();
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdDate;
+
+    @UpdateTimestamp
+    private LocalDateTime lastModifiedDate;
 }

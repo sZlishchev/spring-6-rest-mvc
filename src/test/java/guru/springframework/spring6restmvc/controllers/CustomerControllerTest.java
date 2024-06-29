@@ -2,6 +2,7 @@ package guru.springframework.spring6restmvc.controllers;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import guru.springframework.spring6restmvc.config.SpringSecConfig;
 import guru.springframework.spring6restmvc.model.CustomerDTO;
 import guru.springframework.spring6restmvc.services.CustomerService;
 import guru.springframework.spring6restmvc.services.impl.CustomerServiceImpl;
@@ -11,23 +12,26 @@ import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
+import static guru.springframework.spring6restmvc.controllers.HttpBasicConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.core.Is.is;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CustomerController.class)
+@Import(SpringSecConfig.class)
 class CustomerControllerTest {
     
     @Autowired
@@ -50,7 +54,8 @@ class CustomerControllerTest {
     void testGetCustomerByIdNotFound() throws Exception {
         when(this.customerService.getCustomerById(any(UUID.class))).thenReturn(Optional.empty());
         
-        this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID()))
+        this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID())
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isNotFound());
     }
     
@@ -65,7 +70,8 @@ class CustomerControllerTest {
         this.mockMvc.perform(patch(CustomerController.CUSTOMER_PATH_ID, customerId)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(this.objectMapper.writeValueAsString(customer)))
+                .content(this.objectMapper.writeValueAsString(customer))
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk());
         
         verify(this.customerService).patchCustomerById(uuidCaptor.capture(), this.customerCaptor.capture());
@@ -81,7 +87,8 @@ class CustomerControllerTest {
         when(this.customerService.deleteCustomerById(customerId)).thenReturn(true);
         
         this.mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, customerId)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk());
         
         verify(this.customerService).deleteCustomerById(customerId);
@@ -96,7 +103,8 @@ class CustomerControllerTest {
         this.mockMvc.perform(put(CustomerController.CUSTOMER_PATH_ID, customer.getId())
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(customer)))
+                        .content(this.objectMapper.writeValueAsString(customer))
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk());
 
         verify(this.customerService).updateCustomer(customer.getId(), customer);
@@ -113,7 +121,8 @@ class CustomerControllerTest {
         this.mockMvc.perform(post(CustomerController.CUSTOMER_PATH)
                 .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(customer)))
+                        .content(this.objectMapper.writeValueAsString(customer))
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(header().exists("Location"));
@@ -124,7 +133,8 @@ class CustomerControllerTest {
         when(this.customerService.getCustomersList()).thenReturn(this.customerServiceImpl.getCustomersList());
         
         mockMvc.perform(get(CustomerController.CUSTOMER_PATH)
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()", is(3)));
@@ -137,10 +147,19 @@ class CustomerControllerTest {
         when(this.customerService.getCustomerById(testCustomer.getId())).thenReturn(Optional.of(testCustomer));
         
         this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, testCustomer.getId())
-                .accept(MediaType.APPLICATION_JSON))
+                .accept(MediaType.APPLICATION_JSON)
+                        .with(httpBasic(USER, PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testCustomer.getId().toString())))
                 .andExpect(jsonPath("$.name", is(testCustomer.getName())));
+    }
+
+    @Test
+    void getCustomerById_invalidCredentials() throws Exception {
+        this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(httpBasic(WRONG_USER, WRONG_PASSWORD)))
+                .andExpect(status().isUnauthorized());
     }
 }

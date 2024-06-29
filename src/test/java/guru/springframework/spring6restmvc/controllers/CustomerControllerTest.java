@@ -55,7 +55,7 @@ class CustomerControllerTest {
         when(this.customerService.getCustomerById(any(UUID.class))).thenReturn(Optional.empty());
         
         this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID())
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isNotFound());
     }
     
@@ -71,7 +71,7 @@ class CustomerControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(customer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
         
         verify(this.customerService).patchCustomerById(uuidCaptor.capture(), this.customerCaptor.capture());
@@ -88,7 +88,7 @@ class CustomerControllerTest {
         
         this.mockMvc.perform(delete(CustomerController.CUSTOMER_PATH_ID, customerId)
                 .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
         
         verify(this.customerService).deleteCustomerById(customerId);
@@ -104,7 +104,7 @@ class CustomerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(customer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
 
         verify(this.customerService).updateCustomer(customer.getId(), customer);
@@ -122,7 +122,7 @@ class CustomerControllerTest {
                 .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(customer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(header().exists("Location"));
@@ -134,7 +134,7 @@ class CustomerControllerTest {
         
         mockMvc.perform(get(CustomerController.CUSTOMER_PATH)
                 .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.length()", is(3)));
@@ -148,7 +148,7 @@ class CustomerControllerTest {
         
         this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, testCustomer.getId())
                 .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testCustomer.getId().toString())))
@@ -158,8 +158,7 @@ class CustomerControllerTest {
     @Test
     void getCustomerById_invalidCredentials() throws Exception {
         this.mockMvc.perform(get(CustomerController.CUSTOMER_PATH_ID, UUID.randomUUID())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(WRONG_USER, WRONG_PASSWORD)))
-                .andExpect(status().isUnauthorized());
+                        .accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnauthorized());
     }
 }

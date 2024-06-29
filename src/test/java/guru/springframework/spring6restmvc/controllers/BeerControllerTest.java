@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,6 +27,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -56,7 +58,7 @@ class BeerControllerTest {
         when(this.beerService.getBeerById(any(UUID.class))).thenReturn(Optional.empty());
 
         this.mockMvc.perform(get(BeerController.BEER_PATH_ID, UUID.randomUUID())
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isNotFound());
     }
 
@@ -71,7 +73,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
 
         verify(this.beerService).patchBeerById(uuidCaptor.capture(), beerCaptor.capture());
@@ -88,7 +90,7 @@ class BeerControllerTest {
 
         this.mockMvc.perform(delete(BeerController.BEER_PATH_ID, beerId)
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
 
         verify(this.beerService).deleteBeerById(beerId);
@@ -105,7 +107,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk());
 
         verify(this.beerService).updateBeer(beer.getId(), beer);
@@ -120,7 +122,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(2)));
 
@@ -136,7 +138,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
 
@@ -152,7 +154,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
 
@@ -168,7 +170,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
 
@@ -184,7 +186,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(2)));
 
@@ -200,7 +202,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
 
@@ -219,7 +221,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(header().exists("Location"));
@@ -236,7 +238,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(2)));
     }
@@ -252,7 +254,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
     }
@@ -268,7 +270,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
     }
@@ -284,7 +286,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
     }
@@ -300,7 +302,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(2)));
     }
@@ -316,7 +318,7 @@ class BeerControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beer))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)));
     }
@@ -328,7 +330,7 @@ class BeerControllerTest {
 
         this.mockMvc.perform(get(BeerController.BEER_PATH)
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.content.length()", is(3)));
@@ -342,7 +344,7 @@ class BeerControllerTest {
 
         this.mockMvc.perform(get(BeerController.BEER_PATH_ID, testBeer.getId())
                         .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id", is(testBeer.getId().toString())))
@@ -354,8 +356,7 @@ class BeerControllerTest {
     @Test
     void getBeerById_invalidCredentials() throws Exception {
         this.mockMvc.perform(get(BeerController.BEER_PATH_ID, UUID.randomUUID())
-                        .accept(MediaType.APPLICATION_JSON)
-                        .with(httpBasic(WRONG_USER, WRONG_PASSWORD)))
+                        .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 }

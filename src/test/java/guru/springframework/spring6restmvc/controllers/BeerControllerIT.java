@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -206,7 +205,7 @@ class BeerControllerIT {
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(beerMap))
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.length()", is(1)))
                 .andReturn();
@@ -217,7 +216,7 @@ class BeerControllerIT {
         this.mockMvc.perform(get(BeerController.BEER_PATH)
                         .queryParam("beerName", "IPA")
                 .queryParam("pageSize", "500")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(336)));
     }
@@ -227,7 +226,7 @@ class BeerControllerIT {
         this.mockMvc.perform(get(BeerController.BEER_PATH)
                         .queryParam("beerStyle", BeerStyle.STOUT.name())
                         .queryParam("pageSize", "500")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(57)));
     }
@@ -238,7 +237,7 @@ class BeerControllerIT {
                         .queryParam("beerStyle", BeerStyle.IPA.name())
                         .queryParam("beerName", "IPA")
                         .queryParam("pageSize", "500")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(310)));
     }
@@ -250,7 +249,7 @@ class BeerControllerIT {
                         .queryParam("beerName", "IPA")
                         .queryParam("showInventory", "false")
                         .queryParam("pageSize", "500")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(310)))
                 .andExpect(jsonPath("$.content.[0].quantityOnHand").value(IsNull.nullValue()));
@@ -263,7 +262,7 @@ class BeerControllerIT {
                         .queryParam("beerName", "IPA")
                         .queryParam("showInventory", "true")
                 .queryParam("pageSize", "500")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(310)))
                 .andExpect(jsonPath("$.content.[0].quantityOnHand").value(IsNull.notNullValue()));
@@ -277,7 +276,7 @@ class BeerControllerIT {
                         .queryParam("showInventory", "true")
                         .queryParam("pageNumber", "2")
                         .queryParam("pageSize", "25")
-                        .with(httpBasic(USER, PASSWORD)))
+                        .with(JWT_REQUEST_POST_PROCESSOR))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()", is(25)))
                 .andExpect(jsonPath("$.content.[0].quantityOnHand").value(IsNull.notNullValue()));
@@ -285,8 +284,7 @@ class BeerControllerIT {
 
     @Test
     void testGetBeers_invalidCredentials() throws Exception {
-        this.mockMvc.perform(get(BeerController.BEER_PATH)
-                        .with(httpBasic(WRONG_USER, WRONG_PASSWORD)))
-                .andExpect(status().isUnauthorized());
+        this.mockMvc.perform(get(BeerController.BEER_PATH))
+        .andExpect(status().isUnauthorized());
     }
 }
